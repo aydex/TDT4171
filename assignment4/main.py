@@ -1,11 +1,19 @@
 import random
 import math
+import copy
+
+try:
+    from ete3 import Tree
+except ImportError as e:
+    pass
+
 
 class Node:
     def __init__(self, attribute):
         self.attribute = attribute
         self.rightChild = None
         self.leftChild = None
+
 
 def plurality_value(examples):
     n = 0.0
@@ -61,6 +69,7 @@ def importance(a, examples):
     return b(p/(p+n)) - remainder(a, p, n, examples)
     pass
 
+
 def all_same_class(examples):
     value = examples[0][-1]
     for example in examples:
@@ -68,7 +77,8 @@ def all_same_class(examples):
             return False
     return True
 
-def decision_tree_learning(examples, attributes, parent_examples):
+
+def decision_tree_learning(examples, attributes, parent_examples, useRandom=False):
     if len(examples) is 0:
         return plurality_value(parent_examples)
     elif all_same_class(examples):
@@ -77,21 +87,25 @@ def decision_tree_learning(examples, attributes, parent_examples):
         return plurality_value(examples)
     else:
         attribute_gains = [importance(x, examples) for x in attributes]
-        A = attributes[attribute_gains.index(max(attribute_gains))]
-        A_random = random.choice(attributes)
+        if useRandom:
+            A = random.choice(attributes)
+        else:
+            A = attributes[attribute_gains.index(max(attribute_gains))]
         tree = Node(A)
         exs0 = [x for x in examples if x[A] == 0]
         exs1 = [x for x in examples if x[A] == 1]
         attributes.remove(A)
-        subtree0 = decision_tree_learning(exs0, attributes, examples)
-        subtree1 = decision_tree_learning(exs1, attributes, examples)
+        subtree0 = decision_tree_learning(exs0, attributes, examples, useRandom)
+        subtree1 = decision_tree_learning(exs1, attributes, examples, useRandom)
         tree.rightChild = subtree1
         tree.leftChild = subtree0
         return tree
 
-def train(examples, attributes):
-    tree = decision_tree_learning(examples, attributes, [])
+
+def train(examples, attributes, useRandom = False):
+    tree = decision_tree_learning(examples, attributes, [], useRandom)
     return tree
+
 
 def test(tree, examples):
     l = len(examples)
@@ -99,16 +113,17 @@ def test(tree, examples):
     n = 0.0
     for example in examples:
         subTree = tree
-        while(isinstance(subTree, Node)):
+        while isinstance(subTree, Node):
             if example[subTree.attribute]:
                 subTree = subTree.rightChild
             else:
                 subTree = subTree.leftChild
-        if(example[-1] == subTree):
+        if example[-1] == subTree:
             p += 1
         else:
             n += 1
     return float(p)/l
+
 
 def print_tree(tree):
     s = "("
@@ -137,6 +152,7 @@ def print_tree(tree):
         s += str(tree.attribute) + ","
     return s
 
+
 def main():
     random.seed()
     trainingFile = open("data/training.txt","r")
@@ -160,14 +176,35 @@ def main():
             else:
                 testExamples[i][j] = 0
     attributes = [x for x in range(0, len(trainingExamples[0])-1)]
+    random_attributes = copy.deepcopy(attributes)
     trainingFile.close()
     testFile.close()
     tree = train(trainingExamples, attributes)
+    random_tree = train(trainingExamples, random_attributes, True)
     accuracy = test(tree, testExamples)
+    random_accuracy = test(random_tree, testExamples)
     print accuracy
+    print random_accuracy
     s = print_tree(tree)
     s = s[:-1]
+    s += ';'
     print s
 
+    try:
+        t = Tree(s, format=1)
+        print t.get_ascii(show_internal=True)
+    except NameError as e:
+        pass
+
+    r = print_tree(random_tree)
+    r = r[:-1]
+    r += ';'
+    print r
+
+    try:
+        rt = Tree(r, format=1)
+        print rt.get_ascii(show_internal=True)
+    except NameError as e:
+        pass
 
 main()
