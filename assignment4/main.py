@@ -1,7 +1,6 @@
 import random
 import math
 
-
 class Node:
     def __init__(self, attribute):
         self.attribute = attribute
@@ -9,8 +8,8 @@ class Node:
         self.leftChild = None
 
 def plurality_value(examples):
-    n = 0
-    p = 0
+    n = 0.0
+    p = 0.0
 
     for e in examples:
         if e[-1]:
@@ -24,14 +23,19 @@ def plurality_value(examples):
 
 
 def b(q):
-    return -(q*math.log(q, 2)+(1-q)*math.log((1-q), 2))
+    if q == 0:
+        return -(1-q)*math.log((1-q), 2)
+    elif q == 1:
+        return -(q*math.log(q, 2))
+    else:
+        return -(q*math.log(q, 2)+(1-q)*math.log((1-q), 2))
 
 
 def remainder(a, p, n, examples):
-    p0 = 0
-    p1 = 0
-    n0 = 0
-    n1 = 0
+    p0 = 0.0
+    p1 = 0.0
+    n0 = 0.0
+    n1 = 0.0
     for e in examples:
         if e[a]:
             if e[-1]:
@@ -47,8 +51,8 @@ def remainder(a, p, n, examples):
 
 
 def importance(a, examples):
-    p = 0
-    n = 0
+    p = 0.0
+    n = 0.0
     for example in examples:
         if example[-1]:
             p += 1
@@ -68,7 +72,7 @@ def decision_tree_learning(examples, attributes, parent_examples):
     if len(examples) is 0:
         return plurality_value(parent_examples)
     elif all_same_class(examples):
-        return all_same_class(examples)
+        return plurality_value(examples)
     elif len(attributes) is 0:
         return plurality_value(examples)
     else:
@@ -76,16 +80,13 @@ def decision_tree_learning(examples, attributes, parent_examples):
         A = attributes[attribute_gains.index(max(attribute_gains))]
         A_random = random.choice(attributes)
         tree = Node(A)
-        exs0 = None
-        exs1 = None
-        subtree0 = decision_tree_learning()
-        subtree1 = decision_tree_learning()
+        exs0 = [x for x in examples if x[A] == 0]
+        exs1 = [x for x in examples if x[A] == 1]
+        attributes.remove(A)
+        subtree0 = decision_tree_learning(exs0, attributes, examples)
+        subtree1 = decision_tree_learning(exs1, attributes, examples)
         tree.rightChild = subtree1
         tree.leftChild = subtree0
-        for v in A:  # Needs amendment
-            exs = v  # Needs amendment
-            subtree = decision_tree_learning(exs, attributes - A, examples)
-            # Need to add a branch to tree with label (A = vk) and subtree "subtree" somewhere"
         return tree
 
 def train(examples, attributes):
@@ -93,6 +94,9 @@ def train(examples, attributes):
     return tree
 
 def test(tree, examples):
+    l = len(examples)
+    p = 0.0
+    n = 0.0
     for example in examples:
         subTree = tree
         while(isinstance(subTree, Node)):
@@ -101,8 +105,37 @@ def test(tree, examples):
             else:
                 subTree = subTree.leftChild
         if(example[-1] == subTree):
-            pass
-    return 0
+            p += 1
+        else:
+            n += 1
+    return float(p)/l
+
+def print_tree(tree):
+    s = "("
+    if tree.rightChild == None:
+        if tree.attribute:
+            s += "True,"
+        else:
+            s += "False,"
+    else:
+        if isinstance(tree.rightChild, Node):
+            s += str(print_tree(tree.rightChild))
+        else:
+            if tree.rightChild:
+                s += "True,"
+            else:
+                s += "False,"
+        if isinstance(tree.leftChild, Node):
+            s += str(print_tree(tree.leftChild))
+        else:
+            if tree.leftChild:
+                s += "True,"
+            else:
+                s += "False,"
+        s = s[:-1]
+        s += ")"
+        s += str(tree.attribute) + ","
+    return s
 
 def main():
     random.seed()
@@ -132,6 +165,9 @@ def main():
     tree = train(trainingExamples, attributes)
     accuracy = test(tree, testExamples)
     print accuracy
+    s = print_tree(tree)
+    s = s[:-1]
+    print s
 
 
 main()
