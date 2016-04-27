@@ -18,7 +18,6 @@ class Node:
 def plurality_value(examples):
     n = 0.0
     p = 0.0
-
     for e in examples:
         if e[-1]:
             p += 1
@@ -77,7 +76,7 @@ def all_same_class(examples):
             return False
     return True
 
-
+#The decision tree building algorithm
 def decision_tree_learning(examples, attributes, parent_examples, useRandom=False):
     if len(examples) is 0:
         return plurality_value(parent_examples)
@@ -92,6 +91,7 @@ def decision_tree_learning(examples, attributes, parent_examples, useRandom=Fals
         else:
             A = attributes[attribute_gains.index(max(attribute_gains))]
         tree = Node(A)
+        #Since each attribute only has two possible values we can divide the examples into two sets.
         exs0 = [x for x in examples if x[A] == 0]
         exs1 = [x for x in examples if x[A] == 1]
         attributes.remove(A)
@@ -101,16 +101,16 @@ def decision_tree_learning(examples, attributes, parent_examples, useRandom=Fals
         tree.leftChild = subtree0
         return tree
 
-
+#Train and build the decision tree
 def train(examples, attributes, useRandom = False):
     tree = decision_tree_learning(examples, attributes, [], useRandom)
     return tree
 
-
+#Use decision tree to classify test examples and calculate accuracy. The method searches through the tree until it
+#encounters a leaf node (Leaf nodes do not belong to the Node class)
 def test(tree, examples):
     l = len(examples)
     p = 0.0
-    n = 0.0
     for example in examples:
         subTree = tree
         while isinstance(subTree, Node):
@@ -120,11 +120,9 @@ def test(tree, examples):
                 subTree = subTree.leftChild
         if example[-1] == subTree:
             p += 1
-        else:
-            n += 1
     return float(p)/l
 
-
+#Create string representation of tree which is used by ETE to visualize the tree
 def print_tree(tree):
     s = "("
     if tree.rightChild == None:
@@ -155,14 +153,17 @@ def print_tree(tree):
 
 def main():
     random.seed()
+    #Open the files
     trainingFile = open("data/training.txt","r")
     testFile = open("data/test.txt", "r")
     trainingExamples = []
     testExamples = []
+    #Read eaxmaples from files
     for line in trainingFile:
         trainingExamples.append(line.split())
     for line in testFile:
         testExamples.append(line.split())
+    #Convert 2 to 0 in examples and make the values integers
     for i in xrange(0, len(trainingExamples)):
         for j in xrange(0, len(trainingExamples[0])):
             if trainingExamples[i][j] == '1':
@@ -175,16 +176,22 @@ def main():
                 testExamples[i][j] = 1
             else:
                 testExamples[i][j] = 0
+    #Create the attrbutes 0 to 6
     attributes = [x for x in range(0, len(trainingExamples[0])-1)]
+    #Create deep copy in order for training with random Importance
     random_attributes = copy.deepcopy(attributes)
+    #Close files
     trainingFile.close()
     testFile.close()
+    #Train two trees, one with regular Importance and one with random Importance
     tree = train(trainingExamples, attributes)
     random_tree = train(trainingExamples, random_attributes, True)
+    #Test the trees
     accuracy = test(tree, testExamples)
     random_accuracy = test(random_tree, testExamples)
     print accuracy
     print random_accuracy
+    #Visualise the trees
     s = print_tree(tree)
     s = s[:-1]
     s += ';'
