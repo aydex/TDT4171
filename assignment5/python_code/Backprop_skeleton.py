@@ -85,13 +85,27 @@ class NN: #Neural Network
         return self.outputActivation
 
     def computeOutputDelta(self):
-        #TODO: Implement the delta function for the output layer (see exercise text)
+        #Implement the delta function for the output layer (see exercise text)
+        p_ab = logFunc(self.prevOutputActivation - self.outputActivation)
+        self.prevDeltaOutput = logFuncDerivative(self.prevOutputActivation)*(1-p_ab)
+        self.deltaOutput = logFuncDerivative(self.outputActivation)*(1-p_ab)
 
     def computeHiddenDelta(self):
-        #TODO: Implement the delta function for the hidden layer (see exercise text)
+        #Implement the delta function for the hidden layer (see exercise text)
+        for h in range(self.numHidden):
+            self.prevDeltaHidden[h] = logFuncDerivative(self.prevHiddenActivations[h])*self.weightsOutput[h]*(self.prevDeltaOutput - self.deltaOutput)
+            self.deltaHidden[h] = logFuncDerivative(self.hiddenActivations[h])*self.weightsOutput[h]*(self.prevDeltaOutput - self.deltaOutput)
+
 
     def updateWeights(self):
-        #TODO: Update the weights of the network using the deltas (see exercise text)
+        #Update the weights of the network using the deltas (see exercise text)
+        for i in range(len(self.weightsInput)):
+            for j in range(len(self.weightsInput[i])):
+                self.weightsInput[i][j] += self.learningRate * (self.prevDeltaHidden[j]*self.prevInputActivations[i] - self.deltaHidden[j]*self.inputActivation[i])
+
+        for h in range(len(self.weightsOutput)):
+            self.weightsOutput[h] += self.learningRate * (self.prevDeltaOutput*self.prevOutputActivation - self.deltaOutput*self.outputActivation)
+
 
     def backpropagate(self):
         self.computeOutputDelta()
