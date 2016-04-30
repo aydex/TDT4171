@@ -80,19 +80,22 @@ def runRanker(trainingset, testset):
                 if not (i == j):
                     testPatterns.append([i.features, j.features])
 
-    accuracy = []
+    testError = []
+    trainingError = []
     run = [x for x in xrange(26)]
     #Check ANN performance before training
-    accuracy.append(nn.countMisorderedPairs(testPatterns))
+    testError.append(nn.countMisorderedPairs(testPatterns))
+    trainingError.append(nn.countMisorderedPairs(trainingPatterns))
     for i in range(25):
         #Running 25 iterations, measuring testing performance after each round of training.
         #Training
-        nn.train(trainingPatterns,iterations=1)
+        trainingError.append(nn.train(trainingPatterns,iterations=1))
         #Check ANN performance after training.
-        accuracy.append(nn.countMisorderedPairs(testPatterns))
+        testError.append(nn.countMisorderedPairs(testPatterns))
 
     #TODO: Store the data returned by countMisorderedPairs and plot it, showing how training and testing errors develop.
-    plt.plot(run, accuracy)
+    plt.plot(run, testError, 'r', run, trainingError, 'g')
+    plt.show()
 
 
 runRanker("../datasets/train.txt","../datasets/test.txt")
