@@ -122,22 +122,29 @@ class NN: #Neural Network
         print(self.weightsOutput)
 
     def train(self, patterns, iterations=1):
-        #TODO: Train the network on all patterns for a number of iterations.
+        #Train the network on all patterns for a number of iterations.
         #To measure performance each iteration: Run for 1 iteration, then count misordered pairs.
-        #TODO: Training is done  like this (details in exercise text):
-        #-Propagate A
-        #-Propagate B
-        #-Backpropagate
+        for pair in patterns:
+            #Training is done  like this (details in exercise text):
+            self.propagate(pair[0])
+            self.propagate(pair[1])
+            self.backpropagate()
+        return self.countMisorderedPairs(patterns)
 
     def countMisorderedPairs(self, patterns):
-        #TODO: Let the network classify all pairs of patterns. The highest output determines the winner.
-        #for each pair, do
-        #Propagate A
-        #Propagate B
+        #Let the network classify all pairs of patterns. The highest output determines the winner.
+        numRight = 0.0
+        numMisses = 0.0
+        for pair in patterns:
+            a = self.propagate(pair[0])
+            b = self.propagate(pair[1])
         #if A>B: A wins. If B>A: B wins
         #if rating(winner) > rating(loser): numRight++
         #else: numMisses++
-        #end of for
-        #TODO: Calculate the ratio of correct answers:
+        if a > b:
+            numRight += 1
+        else:
+            numMisses += 1
+        #Calculate the ratio of correct answers:
         #errorRate = numMisses/(numRight+numMisses)
-        pass
+        return numMisses/(numRight + numMisses)
