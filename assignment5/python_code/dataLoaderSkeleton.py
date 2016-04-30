@@ -60,14 +60,24 @@ def runRanker(trainingset, testset):
     for qid in dhTraining.dataset.keys():
         #This iterates through every query ID in our training set
         dataInstance=dhTraining.dataset[qid] #All data instances (query, features, rating) for query qid
-        #TODO: Store the training instances into the trainingPatterns array. Remember to store them as pairs, where the first item is rated higher than the second.
-        #TODO: Hint: A good first step to get the pair ordering right, is to sort the instances based on their rating for this query. (sort by x.rating for each x in dataInstance)
+        #TODO: Store the training instances into the trainingPatterns array. Remember to store them as pairs, where the first item is rated higher than the second. (Done)
+        #TODO: Hint: A good first step to get the pair ordering right, is to sort the instances based on their rating for this query. (sort by x.rating for each x in dataInstance) (Done)
+        dataInstance.sort(key=lambda d: d.rating, reverse=True)
+        for i in dataInstance:
+            for j in dataInstance:
+                if not (i == j):
+                    trainingPatterns.append([i.features, j.features])
 
     for qid in dhTesting.dataset.keys():
         #This iterates through every query ID in our test set
         dataInstance=dhTesting.dataset[qid]
-        #TODO: Store the test instances into the testPatterns array, once again as pairs.
-        #TODO: Hint: The testing will be easier for you if you also now order the pairs - it will make it easy to see if the ANN agrees with your ordering.
+        #TODO: Store the test instances into the testPatterns array, once again as pairs. (Done)
+        #TODO: Hint: The testing will be easier for you if you also now order the pairs - it will make it easy to see if the ANN agrees with your ordering. (Done)
+        dataInstance.sort(key=lambda d: d.rating, reverse=True)
+        for i in dataInstance:
+            for j in dataInstance:
+                if not (i == j):
+                    testPatterns.append([i.features, j.features])
 
     #Check ANN performance before training
     nn.countMisorderedPairs(testPatterns)
@@ -82,4 +92,4 @@ def runRanker(trainingset, testset):
 
 
 
-runRanker("train.txt","test.txt")
+runRanker("../datasets/train.txt","../datasets/test.txt")

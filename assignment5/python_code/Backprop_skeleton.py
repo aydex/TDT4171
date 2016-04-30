@@ -86,12 +86,15 @@ class NN: #Neural Network
 
     def computeOutputDelta(self):
         #TODO: Implement the delta function for the output layer (see exercise text)
+        pass
 
     def computeHiddenDelta(self):
         #TODO: Implement the delta function for the hidden layer (see exercise text)
+        pass
 
     def updateWeights(self):
         #TODO: Update the weights of the network using the deltas (see exercise text)
+        pass
 
     def backpropagate(self):
         self.computeOutputDelta()
@@ -114,6 +117,7 @@ class NN: #Neural Network
         #-Propagate A
         #-Propagate B
         #-Backpropagate
+        pass
 
     def countMisorderedPairs(self, patterns):
         #TODO: Let the network classify all pairs of patterns. The highest output determines the winner.
