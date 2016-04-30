@@ -1,6 +1,7 @@
 __author__ = 'kaiolae'
 __author__ = 'kaiolae'
 import Backprop_skeleton as Bp
+import matplotlib.pyplot as plt
 
 #Class for holding your data - one object for each line in the dataset
 class dataInstance:
@@ -71,25 +72,27 @@ def runRanker(trainingset, testset):
     for qid in dhTesting.dataset.keys():
         #This iterates through every query ID in our test set
         dataInstance=dhTesting.dataset[qid]
-        #TODO: Store the test instances into the testPatterns array, once again as pairs. (Done)
-        #TODO: Hint: The testing will be easier for you if you also now order the pairs - it will make it easy to see if the ANN agrees with your ordering. (Done)
+        #TODO: Store the test instances into the testPatterns array, once again as pairs.
+        #TODO: Hint: The testing will be easier for you if you also now order the pairs - it will make it easy to see if the ANN agrees with your ordering.
         dataInstance.sort(key=lambda d: d.rating, reverse=True)
         for i in dataInstance:
             for j in dataInstance:
                 if not (i == j):
                     testPatterns.append([i.features, j.features])
 
+    accuracy = []
+    run = [x for x in xrange(26)]
     #Check ANN performance before training
-    nn.countMisorderedPairs(testPatterns)
+    accuracy.append(nn.countMisorderedPairs(testPatterns))
     for i in range(25):
         #Running 25 iterations, measuring testing performance after each round of training.
         #Training
         nn.train(trainingPatterns,iterations=1)
         #Check ANN performance after training.
-        nn.countMisorderedPairs(testPatterns)
+        accuracy.append(nn.countMisorderedPairs(testPatterns))
 
     #TODO: Store the data returned by countMisorderedPairs and plot it, showing how training and testing errors develop.
-
+    plt.plot(run, accuracy)
 
 
 runRanker("../datasets/train.txt","../datasets/test.txt")
