@@ -64,10 +64,11 @@ def runRanker(trainingset, testset):
         #Store the training instances into the trainingPatterns array. Remember to store them as pairs, where the first item is rated higher than the second.
         #Hint: A good first step to get the pair ordering right, is to sort the instances based on their rating for this query. (sort by x.rating for each x in dataInstance)
         dataInstance.sort(key=lambda d: d.rating, reverse=True)
-        for i in dataInstance:
-            for j in dataInstance:
-                if not (i == j):
-                    trainingPatterns.append([i.features, j.features])
+        for i in xrange(len(dataInstance)):
+            for j in xrange(i+1, len(dataInstance)):
+                if not (dataInstance[i].rating == dataInstance[j].rating):
+                    trainingPatterns.append([dataInstance[i].features, dataInstance[j].features])
+    print len(trainingPatterns)
 
     for qid in dhTesting.dataset.keys():
         #This iterates through every query ID in our test set
@@ -75,10 +76,10 @@ def runRanker(trainingset, testset):
         #Store the test instances into the testPatterns array, once again as pairs.
         #Hint: The testing will be easier for you if you also now order the pairs - it will make it easy to see if the ANN agrees with your ordering.
         dataInstance.sort(key=lambda d: d.rating, reverse=True)
-        for i in dataInstance:
-            for j in dataInstance:
-                if not (i == j):
-                    testPatterns.append([i.features, j.features])
+        for i in xrange(len(dataInstance)):
+            for j in xrange(i+1, len(dataInstance)):
+                if not (dataInstance[i].rating == dataInstance[j].rating):
+                    testPatterns.append([dataInstance[i].features, dataInstance[j].features])
 
     testError = []
     trainingError = []
@@ -87,11 +88,15 @@ def runRanker(trainingset, testset):
     testError.append(nn.countMisorderedPairs(testPatterns))
     trainingError.append(nn.countMisorderedPairs(trainingPatterns))
     for i in range(25):
+        print i
         #Running 25 iterations, measuring testing performance after each round of training.
         #Training
         trainingError.append(nn.train(trainingPatterns,iterations=1))
         #Check ANN performance after training.
         testError.append(nn.countMisorderedPairs(testPatterns))
+        print trainingError[i+1]
+        print testError[i+1]
+
 
     #Store the data returned by countMisorderedPairs and plot it, showing how training and testing errors develop.
     plt.plot(run, testError, 'r', run, trainingError, 'g')

@@ -141,10 +141,10 @@ class NN: #Neural Network
         #if A>B: A wins. If B>A: B wins
         #if rating(winner) > rating(loser): numRight++
         #else: numMisses++
-        if a > b:
-            numRight += 1
-        else:
-            numMisses += 1
+            if a > b:
+                numRight += 1
+            else:
+                numMisses += 1
         #Calculate the ratio of correct answers:
         #errorRate = numMisses/(numRight+numMisses)
         return numMisses/(numRight + numMisses)
