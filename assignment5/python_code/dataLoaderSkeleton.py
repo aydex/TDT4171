@@ -99,7 +99,10 @@ def runRanker(trainingset, testset):
 
 
     #Store the data returned by countMisorderedPairs and plot it, showing how training and testing errors develop.
-    plt.plot(run, testError, 'r', run, trainingError, 'g')
+    #plt.plot(run, testError, 'r', run, trainingError, 'g')
+    plt.plot(testError, label='Test Error')
+    plt.plot(trainingError, label='Training Error')
+    plt.legend()
     plt.show()
 
 
