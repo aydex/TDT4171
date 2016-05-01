@@ -1,8 +1,8 @@
 __author__ = 'kaiolae'
-__author__ = 'kaiolae'
 import Backprop_skeleton as Bp
 import matplotlib.pyplot as plt
 
+results = []
 
 # Class for holding your data - one object for each line in the dataset
 class DataInstance:
@@ -93,7 +93,7 @@ def run_ranker(trainingset, testset):
     # Check ANN performance before training
     test_error.append(nn.countMisorderedPairs(test_patterns))
     training_error.append(nn.countMisorderedPairs(training_patterns))
-    for i in range(25):
+    for i in range(20):
         print i
         # Running 25 iterations, measuring testing performance after each round of training.
         # Training
@@ -105,10 +105,38 @@ def run_ranker(trainingset, testset):
 
     # Store the data returned by countMisorderedPairs and plot it, showing how training and testing errors develop.
     # plt.plot(run, testError, 'r', run, trainingError, 'g')
+    return [test_error, training_error]
     plt.plot(test_error, label='Test Error')
     plt.plot(training_error, label='Training Error')
     plt.legend()
     plt.show()
 
 
-run_ranker("../datasets/train.txt", "../datasets/test.txt")
+def main():
+    for i in xrange(5):
+        print "Running test", i + 1
+        results.append(run_ranker("../datasets/train.txt", "../datasets/test.txt"))
+
+    tests = len(results)
+    iterations = len(results[0][0])
+
+    avg_test_error = [0.0]*iterations
+    avg_training_error = [0.0]*iterations
+
+    for i in xrange(tests):
+        for j in xrange(iterations):
+            avg_test_error[j] += results[i][0][j]
+            avg_training_error[j] += results[i][1][j]
+
+    for i in xrange(iterations):
+        avg_test_error[i] = 1 - (avg_test_error[i] / tests)
+        avg_training_error[i] = 1 - (avg_training_error[i] / tests)
+
+    print "Average training success:", avg_training_error
+    print "Average test success:", avg_test_error
+    plt.plot(avg_test_error, label='Average Test Success')
+    plt.plot(avg_training_error, label='Average Training Success')
+    plt.legend()
+    plt.show()
+
+main()
