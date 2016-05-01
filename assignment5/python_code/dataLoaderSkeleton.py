@@ -3,107 +3,112 @@ __author__ = 'kaiolae'
 import Backprop_skeleton as Bp
 import matplotlib.pyplot as plt
 
-#Class for holding your data - one object for each line in the dataset
-class dataInstance:
 
-    def __init__(self,qid,rating,features):
-        self.qid = qid #ID of the query
-        self.rating = rating #Rating of this site for this query
-        self.features = features #The features of this query-site pair.
+# Class for holding your data - one object for each line in the dataset
+class DataInstance:
+    def __init__(self, qid, rating, features):
+        self.qid = qid  # ID of the query
+        self.rating = rating  # Rating of this site for this query
+        self.features = features  # The features of this query-site pair.
 
     def __str__(self):
-        return "Datainstance - qid: "+ str(self.qid)+ ". rating: "+ str(self.rating)+ ". features: "+ str(self.features)
+        return "Datainstance - qid: " + str(self.qid) + ". rating: " + str(self.rating) + ". features: " + str(
+            self.features)
 
 
-#A class that holds all the data in one of our sets (the training set or the testset)
-class dataHolder:
-
+# A class that holds all the data in one of our sets (the training set or the testset)
+class DataHolder:
     def __init__(self, dataset):
-        self.dataset = self.loadData(dataset)
+        self.dataset = self.load_data(dataset)
 
-    def loadData(self,file):
-        #Input: A file with the data.
-        #Output: A dict mapping each query ID to the relevant documents, like this: dataset[queryID] = [dataInstance1, dataInstance2, ...]
+    @staticmethod
+    def load_data(file):
+        # Input: A file with the data.
+        # Output: A dict mapping each query ID to the relevant documents, like this:
+        # dataset[queryID] = [dataInstance1, dataInstance2, ...]
         data = open(file)
         dataset = {}
         for line in data:
-            #Extracting all the useful info from the line of data
-            lineData = line.split()
-            rating = int(lineData[0])
-            qid = int(lineData[1].split(':')[1])
+            # Extracting all the useful info from the line of data
+            line_data = line.split()
+            rating = int(line_data[0])
+            qid = int(line_data[1].split(':')[1])
             features = []
-            for elem in lineData[2:]:
-                if '#docid' in elem: #We reached a comment. Line done.
+            for elem in line_data[2:]:
+                if '#docid' in elem:  # We reached a comment. Line done.
                     break
                 features.append(float(elem.split(':')[1]))
-            #Creating a new data instance, inserting in the dict.
-            di = dataInstance(qid,rating,features)
+            # Creating a new data instance, inserting in the dict.
+            di = DataInstance(qid, rating, features)
             if qid in dataset.keys():
                 dataset[qid].append(di)
             else:
-                dataset[qid]=[di]
+                dataset[qid] = [di]
         return dataset
 
 
-def runRanker(trainingset, testset):
-    #Insert the code for training and testing your ranker here.
-    #Dataholders for training and testset
-    dhTraining = dataHolder(trainingset)
-    dhTesting = dataHolder(testset)
+def run_ranker(trainingset, testset):
+    # Insert the code for training and testing your ranker here.
+    # Dataholders for training and testset
+    dh_training = DataHolder(trainingset)
+    dh_testing = DataHolder(testset)
 
-    #Creating an ANN instance - feel free to experiment with the learning rate (the third parameter).
-    nn = Bp.NN(46,10,0.001)
+    # Creating an ANN instance - feel free to experiment with the learning rate (the third parameter).
+    nn = Bp.NN(46, 10, 0.001)
 
-    #The lists below should hold training patterns in this format: [(data1Features,data2Features), (data1Features,data3Features), ... , (dataNFeatures,dataMFeatures)]
-    #The training set needs to have pairs ordered so the first item of the pair has a higher rating.
-    trainingPatterns = [] #For holding all the training patterns we will feed the network
-    testPatterns = [] #For holding all the test patterns we will feed the network
-    for qid in dhTraining.dataset.keys():
-        #This iterates through every query ID in our training set
-        dataInstance=dhTraining.dataset[qid] #All data instances (query, features, rating) for query qid
-        #Store the training instances into the trainingPatterns array. Remember to store them as pairs, where the first item is rated higher than the second.
-        #Hint: A good first step to get the pair ordering right, is to sort the instances based on their rating for this query. (sort by x.rating for each x in dataInstance)
-        dataInstance.sort(key=lambda d: d.rating, reverse=True)
-        for i in xrange(len(dataInstance)):
-            for j in xrange(i+1, len(dataInstance)):
-                if not (dataInstance[i].rating == dataInstance[j].rating):
-                    trainingPatterns.append([dataInstance[i].features, dataInstance[j].features])
-    print len(trainingPatterns)
+    # The lists below should hold training patterns in this format:
+    # [(data1Features,data2Features), (data1Features,data3Features), ... , (dataNFeatures,dataMFeatures)]
+    # The training set needs to have pairs ordered so the first item of the pair has a higher rating.
+    training_patterns = []  # For holding all the training patterns we will feed the network
+    test_patterns = []  # For holding all the test patterns we will feed the network
+    for qid in dh_training.dataset.keys():
+        # This iterates through every query ID in our training set
+        data_instance = dh_training.dataset[qid]  # All data instances (query, features, rating) for query qid
+        # Store the training instances into the trainingPatterns array.
+        # Remember to store them as pairs, where the first item is rated higher than the second.
+        # Hint: A good first step to get the pair ordering right,
+        # is to sort the instances based on their rating for this query. (sort by x.rating for each x in dataInstance)
+        data_instance.sort(key=lambda d: d.rating, reverse=True)
+        for i in xrange(len(data_instance)):
+            for j in xrange(i + 1, len(data_instance)):
+                if not (data_instance[i].rating == data_instance[j].rating):
+                    training_patterns.append([data_instance[i].features, data_instance[j].features])
+    print len(training_patterns)
 
-    for qid in dhTesting.dataset.keys():
-        #This iterates through every query ID in our test set
-        dataInstance=dhTesting.dataset[qid]
-        #Store the test instances into the testPatterns array, once again as pairs.
-        #Hint: The testing will be easier for you if you also now order the pairs - it will make it easy to see if the ANN agrees with your ordering.
-        dataInstance.sort(key=lambda d: d.rating, reverse=True)
-        for i in xrange(len(dataInstance)):
-            for j in xrange(i+1, len(dataInstance)):
-                if not (dataInstance[i].rating == dataInstance[j].rating):
-                    testPatterns.append([dataInstance[i].features, dataInstance[j].features])
+    for qid in dh_testing.dataset.keys():
+        # This iterates through every query ID in our test set
+        data_instance = dh_testing.dataset[qid]
+        # Store the test instances into the testPatterns array, once again as pairs.
+        # Hint: The testing will be easier for you if you also now order the pairs - it will make it easy to see if
+        # the ANN agrees with your ordering.
+        data_instance.sort(key=lambda d: d.rating, reverse=True)
+        for i in xrange(len(data_instance)):
+            for j in xrange(i + 1, len(data_instance)):
+                if not (data_instance[i].rating == data_instance[j].rating):
+                    test_patterns.append([data_instance[i].features, data_instance[j].features])
 
-    testError = []
-    trainingError = []
+    test_error = []
+    training_error = []
     run = [x for x in xrange(26)]
-    #Check ANN performance before training
-    testError.append(nn.countMisorderedPairs(testPatterns))
-    trainingError.append(nn.countMisorderedPairs(trainingPatterns))
+    # Check ANN performance before training
+    test_error.append(nn.countMisorderedPairs(test_patterns))
+    training_error.append(nn.countMisorderedPairs(training_patterns))
     for i in range(25):
         print i
-        #Running 25 iterations, measuring testing performance after each round of training.
-        #Training
-        trainingError.append(nn.train(trainingPatterns,iterations=1))
-        #Check ANN performance after training.
-        testError.append(nn.countMisorderedPairs(testPatterns))
-        print trainingError[i+1]
-        print testError[i+1]
+        # Running 25 iterations, measuring testing performance after each round of training.
+        # Training
+        training_error.append(nn.train(training_patterns, iterations=1))
+        # Check ANN performance after training.
+        test_error.append(nn.countMisorderedPairs(test_patterns))
+        print training_error[i + 1]
+        print test_error[i + 1]
 
-
-    #Store the data returned by countMisorderedPairs and plot it, showing how training and testing errors develop.
-    #plt.plot(run, testError, 'r', run, trainingError, 'g')
-    plt.plot(testError, label='Test Error')
-    plt.plot(trainingError, label='Training Error')
+    # Store the data returned by countMisorderedPairs and plot it, showing how training and testing errors develop.
+    # plt.plot(run, testError, 'r', run, trainingError, 'g')
+    plt.plot(test_error, label='Test Error')
+    plt.plot(training_error, label='Training Error')
     plt.legend()
     plt.show()
 
 
-runRanker("../datasets/train.txt","../datasets/test.txt")
+run_ranker("../datasets/train.txt", "../datasets/test.txt")
